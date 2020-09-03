@@ -11,6 +11,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 VOLUME ["/db"]
 EXPOSE 4567
 
+RUN wget https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.9.0/ncbi-blast-2.9.0+-x64-linux.tar.gz 
+RUN tar zxf ncbi-blast-2.9.0+-x64-linux.tar.gz
+RUN mv ncbi-blast-2.9.0+/bin/* /usr/bin/ 
+RUN mkdir -p ~/.sequenceserver
+
 COPY . /sequenceserver
 WORKDIR /sequenceserver
 # Install bundler, then use bundler to install SequenceServer's dependencies,
@@ -22,4 +27,5 @@ RUN gem install bundler && \
         yes '' | bundle exec bin/sequenceserver -s -d spec/database/sample
 RUN touch ~/.sequenceserver/asked_to_join
 
-CMD ["bundle", "exec", "bin/sequenceserver", "-d", "/db"]
+# 40 = CPU threads
+CMD ["bundle", "exec", "bin/sequenceserver", "-d", "/db", "-n", "40"]
